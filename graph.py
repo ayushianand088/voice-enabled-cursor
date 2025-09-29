@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from langgraph.prebuilt import ToolNode, tools_condition 
 from langgraph.graph import StateGraph, START, END 
 from langchain_core.tools import tool 
-from langchain.schema import SystemMessage 
+from langchain.schema import SystemMessage, HumanMessage
 import subprocess
 
 load_dotenv() 
@@ -30,10 +30,19 @@ llm = ChatGoogleGenerativeAI(
 
 llm_with_tool = llm.bind_tools(tools=[run_command]) 
 
+# def summarize_text(text: str) -> str:
+#     system_prompt = SystemMessage(content="You are an expert at summarizing text concisely.")
+#     # Wrap text string inside HumanMessage
+#     human_message = HumanMessage(content=text)
+#     response = llm.invoke([system_prompt, human_message])
+#     return response.content
+
 def chatbot(state: State): 
     system_prompt = SystemMessage(content=""" You are an AI Coding assistant who takes an input from user and based on available tools you choose the correct tool and execute the commands. You can even execute commands and help user with the output of the command. Always make sure to keep your generated files in chat_gpt/ folder. """) 
     
     message = llm_with_tool.invoke([system_prompt] + state["messages"]) 
+    # summary_content = summarize_text(message.content)
+    # message.content = summary_content
     assert len(message.tool_calls) <= 1 
     return {"messages": [message]} 
 
